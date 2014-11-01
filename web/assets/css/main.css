@@ -1,0 +1,64 @@
+html, body{
+    background: #FFF;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+footer{
+    background: #404040;
+}
+
+.center{
+    padding: 0;
+    margin: auto 0 auto 0;
+    max-width: 100%;
+    text-align: center;
+}
+
+#page{
+    padding: 0;
+    margin: 8em 0;
+    min-height: 100%;
+}
+
+#main{
+    min-height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#menu{
+    display: block;
+    position: fixed;
+    left: 0; right: 0; top: 0;
+    padding: 2em 0;
+    margin: 0;
+    background: #FFF;
+    border-bottom: solid 1px rgba(200, 200, 200, 0.5);
+}
+
+#menu>a{
+    display: inline-block;
+    margin: 0;
+    padding: 0.75em;
+    text-decoration: none;
+    color: #404040;
+}
+
+#menu>a:hover{
+    background: #F9F9F9;
+}
+
+#menu>a.active{
+    background: #EFEFEF;
+}
+
+#menu>a.active:hover{
+    background: #EFEFEF;
+}
+
+h2{
+    text-align: center;
+}
+
