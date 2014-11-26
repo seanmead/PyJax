@@ -1,5 +1,38 @@
 <h2>Home</h2>
 
 <div class="center">
-    <p>This is the home page!</p>
+
+    <section>
+
+        <section>
+            <p>Hello there! Welcome to PyJax.  I hope you find my project interesting!</p>
+            <p>PyJax is built with web efficiency in mind. Let's see what that means!</p>
+        </section>
+
+        <section>
+            <a class="button" href="./Login">Regular Old link</a>
+            <xmp><a class="button" href="./Login">Regular Old link</a></xmp>
+            <p>Here is a typical link.</p>
+        </section>
+
+        <section>
+            <a class="button" onclick="load('Login');">PyJax Link 1</a>
+            <xmp><a class="button" onclick="load('Login');">PyJax Link 1</a></xmp>
+            <p>We can specify the onclick event to load 'Login'</p>
+        </section>
+
+        <section>
+            <a class="button" load="Login">PyJax Link 2</a>
+            <xmp><a class="button" load="Login">PyJax Link 2</a></xmp>
+            <p>Here we only need to set load equal to 'Login'</p>
+        </section>
+
+        <section>
+            <a class="button" href="/Login?ajax=true" target="_blank">The Framework</a>
+            <p>The idea is to only send the data that is needed.</p>
+            <xmp><a class="button" href="/Login?ajax=true" target="_blank">The Framework</a></xmp>
+        </section>
+
+    </section>
+
 </div>

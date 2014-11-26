@@ -5,7 +5,7 @@ Created on Jan 30, 2014
 """
 
 
-from python.web.Site import Links, Socket
+from python.site.Site import Links, Socket
 from python.modules import Settings, Coder
 from python.modules.Media import TYPES
 
@@ -17,23 +17,24 @@ class Builder(object):
 
         """
         self.__pages = Settings.get('pages')
-        self.__jquery = '<script>%s</script>' % Settings.get('jquery')
-        self.__smart = '<script>%s</script>' % Settings.get('smart')
+        self.__jquery = '\n<script>\n%s\n</script>' % Settings.get('jquery')
+        self.__smart = '\n<script>\n%s\n</script>' % Settings.get('smart')
         self.__media = Settings.get('media')
         self.__images = Settings.get('img')
         self.__script = Settings.get('js')
         self.__style = Settings.get('style')
         self.__title = Settings.get('title')
-        self.__header = '<head>' + Settings.get('meta') + self._get_title() + self._get_style_links() + '</head>'
-        self.__body = '<body>' + Settings.get('nav') + Settings.get('frame') + Settings.get('footer') + \
-                      self.__jquery + self.__smart + self._get_script_links() + '</body>'
+        self.__header = '\n<head>\n' + Settings.get('meta') + self._get_title() + \
+                        self._get_style_links() + self.__jquery + '\n</head>'
+        self.__body = '\n<body>\n' + Settings.get('nav') + Settings.get('frame') + Settings.get('footer') + \
+                      self.__smart + self._get_script_links() + '\n</body>'
 
     def _get_title(self):
         """
         Return the html formatted title.
         :return:
         """
-        return '<title>%s</title>' % self.__title
+        return '\n<title>%s</title>' % self.__title
 
     def _get_script_links(self):
         """
@@ -41,7 +42,7 @@ class Builder(object):
         """
         links = []
         for item in self.__script:
-            links.append('<script>%s</script>' % Settings.get('js').get(item))
+            links.append('\n<script>\n%s\n</script>' % Settings.get('js').get(item))
         return ''.join(links)
 
     def _get_style_links(self):
@@ -51,7 +52,7 @@ class Builder(object):
         """
         links = []
         for item in self.__style:
-            links.append('<style>%s</style>' % Settings.get('style').get(item))
+            links.append('\n<style>\n%s\n</style>' % Settings.get('style').get(item))
         return ''.join(links)
 
     def find_page(self, name):
@@ -107,12 +108,12 @@ class Builder(object):
         :param content:
         :return:
         """
-        page = "<!DOCTYPE html><html>" + self.__header + self.__body + "</html>"
+        page = "<!DOCTYPE html>\n<html>" + self.__header + self.__body
         if content:
-            page = page.replace('<div id="main">', '<div id="main">' + Coder.decode(content))
+            page = page.replace('<!--injected-->', str(content).encode('ascii', errors='strict'))
         if script:
-            page = page.replace('</body>', Coder.decode(script) + '</body>')
-        return page
+            page += script
+        return page + "\n</html>"
 
 
 class Header(object):
@@ -167,6 +168,7 @@ class Client(object):
         self.__links = Links(self.__handler)
         self.__out_headers = []
         self.__path = self.__handler.req.path
+        self.__request = self.__path[1:].replace('/', '_').lower()
 
     def _send_all(self, content):
         """
@@ -197,27 +199,36 @@ class Client(object):
         if request in dir(sock):
             return getattr(sock, request)()
 
+    def __page_logic(self, request):
+        if request in dir(self.__links):
+            content = getattr(self.__links, request)()
+            if not content:
+                content = builder.find_page(self.__path)
+        else:
+            content = builder.find_page(self.__path)
+        return content
+
     def get(self):
         """
         Forward the get request through the content builders and asset handlers.
         """
         if self.__path != '/':
-            build = not 'ajax' in self.__handler.req.arguments
-            request = self.__path[1:].replace('/', '_').lower()
-            if request in dir(self.__links):
-                content = getattr(self.__links, request)()
-                if not content:
-                    content = builder.find_page(self.__path)
-            else:
-                content = builder.find_page(self.__path)
+            self.__handler.enable_build()
+            content = self.__page_logic(self.__request)
             if content or content == "":
-                if build:
-                    content = builder.get_document(content=content)
+                if self.__handler.req.build:
+                    script = None
+                    if 'refresh_script' in dir(self.__links):
+                        script = getattr(self.__links, 'refresh_script')()
+                    content = builder.get_document(content=content, script=script)
             else:
                 header, content = builder.find_asset(self.__path)
                 self.__out_headers.append(header)
         else:
-            content = builder.get_document()
+            script = None
+            if 'refresh_script' in dir(self.__links):
+                script = getattr(self.__links, 'refresh_script')()
+            content = builder.get_document(script=script)
         self._send_all(content)
 
     def post(self):
@@ -225,11 +236,4 @@ class Client(object):
         Forward the post request through the content builders and asset handlers.
         """
         if self.__path != '/':
-            request = self.__path[1:].replace('/', '_').lower()
-            if request in dir(self.__links):
-                content = getattr(self.__links, request)()
-                if not content:
-                    content = builder.find_page(self.__path)
-            else:
-                content = builder.find_page(self.__path)
-            self._send_all(content)
+            self._send_all(self.__page_logic(self.__request))

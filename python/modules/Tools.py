@@ -65,7 +65,7 @@ def get_interface(interface_name):
 
 def route_path():
     """
-    Change the os directory to the current frame.
+    Change the os directory to the current site.
     """
     abs_path = os.path.realpath(inspect.getfile(inspect.currentframe()))
     os.chdir(os.path.abspath(os.path.join(abs_path, os.pardir)))
@@ -157,6 +157,7 @@ def terminate():
 
 def get_epoch(date):
     return int(time.mktime(time.strptime(str(date), '%Y-%m-%d %H:%M:%S')))
+
 
 def human_time(epoch):
     """

@@ -1,14 +1,14 @@
 <div class="center">
-    <form method="POST" id="login" action="login">
-        <div id="status">Please sign in</div>
-        <input name="username" type="text" placeholder="Username" >
-        <input name="password" type="password" placeholder="Password" >
+    <form method="POST" id="register" action="register">
+        <div id="status">Please register</div>
+        <input name="username" type="text" placeholder="Username">
+        <input name="password" type="password" placeholder="Password">
         <input type="submit" value="Submit" class="blue">
     </form>
 </div>
 
 <script>
-    $("#login").submit(function(event){
+    $("#register").submit(function(event){
         var username = document.getElementsByName('username')[0].value;
         var password = CryptoJS.SHA256(document.getElementsByName('password')[0].value).toString(CryptoJS.enc.Hex);
         var action = $(this).attr('action');
@@ -19,12 +19,12 @@
             },
             function(data, status){
                 if (data == 'True') {
-                    $('#login').fadeOut("fast", function () {
+                    $('#register').fadeOut("fast", function () {
                         loadInnerLinks();
                         load('Home');
                     });
                 }else{
-                    $('#status').html('Username or Password incorrect');
+                    $('#status').html('Username already registered');
                 }
             });
         }else{

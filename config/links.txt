@@ -1,3 +1,4 @@
-Home
-About
-Login
+{Home}
+{About}
+{Login}
+{Register}

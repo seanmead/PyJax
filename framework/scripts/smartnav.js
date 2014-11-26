@@ -1,37 +1,58 @@
-var CURRENT = "current";
+//%%%%%%%%%%%%%%%%%%%%%%%%%__NAVIGATION__%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-window.onload = function(){
-  $("#menu > a").click(function(event){
+function activeLink(id) {
+    $('nav>a.active').removeClass('active');
+    $('#' + id).addClass('active');
+}
+
+function load(id) {
+    if (id != location.pathname.substring(1)) {
+        main(id);
+        state(id);
+    }
+}
+
+function refresh() {
+    var id = location.pathname.substring(1);
+    main(id);
+    state(id);
+}
+
+function state(id) {
+    if (history.pushState) history.pushState(null, null, id);
+    else location.hash = id;
+}
+
+function main(id) {
+    $.get(id + '?ajax=true', function(data, status) {
+        $('#main').html(data);
+        activeLink(id);
+        $('a[load]').click(hasLoad);
+    });
+}
+
+window.onpopstate = function(event) {
+    main(location.pathname.substring(1));
+};
+
+$('nav > a').click(function(event) {
     var $this = $(this);
     load($this.attr('id'));
     event.preventDefault();
-  });
+});
 
-  var cur = localStorage.getItem(CURRENT);
-  if(!cur){
-  	load("<inject-home>");
-  }else{
-    activeLink(cur);
-  }
-};
+$(document).ready(function() {
+    $('a[load]').click(hasLoad);
+});
 
-function activeLink(id){
-    $("#menu>a.active").removeClass("active");
-    $("#" + id).addClass("active");
+function hasLoad(event){
+    var $this = $(this);
+    load($this.attr('load'));
+    event.preventDefault();
 }
 
-function load(id){
-    $.get(id + "?ajax=true",
-    function(data, status){
-    	localStorage.setItem(CURRENT, id);
-	if(history.pushState) {
-	  history.pushState(null, null, id);
-	}
-	else {
-	  location.hash = id;
-	}
-        $("#main").html(data);
-        activeLink(id);
-    });	
-}
+var cur = location.pathname.substring(1);
+if (cur) activeLink(cur);
+else load('<inject-home>');
 
+//%%%%%%%%%%%%%%%%%%%%%%%__END_NAVIGATION__%%%%%%%%%%%%%%%%%%%%%%%%%%

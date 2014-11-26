@@ -6,6 +6,8 @@ Created on Oct 1, 2014
 
 from python.modules import Settings, Tools
 from python.modules.Client import Client
+from python.modules.Event import Event
+from python.modules.Media import TYPES
 import os
 import threading
 import time
@@ -17,7 +19,16 @@ import BaseHTTPServer
 from BaseHTTPServer import BaseHTTPRequestHandler
 
 
-SockKey = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+KEY_SOCKET = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+
+
+class File(object):
+    def __init__(self, filename):
+        self.__filename = filename
+
+    def delete(self):
+        if self.__filename:
+            os.remove(self.__filename)
 
 
 class Req(object):
@@ -25,9 +36,21 @@ class Req(object):
         """
         Create a Req object.  The object holds arguments as a dictionary and a request path.
         """
+        self.__build = True
         self.__path = ''
         self.__method = ''
         self.__arguments = {}
+
+    @property
+    def build(self):
+        """
+        :return:
+        """
+        return self.__build
+
+    @build.setter
+    def build(self, build):
+        self.__build = build
 
     @property
     def path(self):
@@ -95,6 +118,14 @@ class ClientHandler(BaseHTTPRequestHandler):
     def req(self, req):
         self.__req = req
 
+    @property
+    def GET(self):
+        return self.req.method == 'GET'
+
+    @property
+    def POST(self):
+        return self.req.method == 'POST'
+
     def address_string(self):
         """
         Override the built in address_string() to return the address.
@@ -134,26 +165,44 @@ class ClientHandler(BaseHTTPRequestHandler):
         with open(self.__tmp, 'wb') as o:
             o.write(line)
         max_int = 100000000
-        loop = length/max_int
+        loop = length / max_int
         m = length % max_int
         for i in range(0, loop):
             with open(self.__tmp, 'ab') as o:
                 o.write(self.rfile.read(max_int))
         with open(self.__tmp, 'ab') as o:
                 o.write(self.rfile.read(m))
+        Event.add_event(obj=File(self.__tmp), method='delete', interval=4, onetime=True, key=self.__tmp, start=True)
 
-    def move_tmp(self, path):
+    def delete_tmp(self):
+        """
+        Delete the tmp file
+        :return:
+        """
+        if self.__tmp:
+            os.remove(self.__tmp)
+
+    def move_tmp(self, path, fail=False):
         """
         Moves the tmp file to the specified path.
         :param path: directory to move the tmp file to
         :return: name of the file
         """
         if self.__tmp:
+            Event.print_events()
+            Event.remove_event(key=self.__tmp)
             h = open(self.__tmp, 'rb')
             boundary = h.readline()
-            filename = Tools.get_item(h.readline(), 'filename')[1:-1]
+            filename = os.path.basename(Tools.get_item(h.readline(), 'filename')[1:-1])
             content_type = h.readline().split(': ')[-1]
             blank_line = h.readline()
+            if not filename or filename == '':
+                return
+            if os.path.exists(path + filename):
+                if fail:
+                    return
+                name, ext = Tools.split_extension(filename)
+                filename = name + str(time.time()) + ext
             with open(path + filename, 'wb') as o:
                 o.writelines(h.readlines()[:-1])
             h.close()
@@ -177,6 +226,15 @@ class ClientHandler(BaseHTTPRequestHandler):
         :param value: Value of the cookie
         """
         self.set_header('Set-Cookie', '%s=%s; Expires=Wed, 09 Jun 2021 10:18:14 GMT' % (name, value))
+
+    def enable_build(self):
+        self.req.build = not 'ajax' in self.req.arguments
+
+    def set_content(self, value):
+        if value in TYPES:
+            value = '%s/%s' % (TYPES.get(value), value)
+            self.req.build = False
+        self.set_header('Content-Type', value)
 
     def set_header(self, name, value):
         """
@@ -223,7 +281,7 @@ class ClientHandler(BaseHTTPRequestHandler):
         self.set_header('Sec-WebSocket-Protocol', self.headers.getheader('Sec-WebSocket-Protocol'))
         key = self.headers.getheader('Sec-WebSocket-Key')
         if key:
-            self.set_header('Sec-WebSocket-Accept', base64.b64encode(hashlib.sha1(key + SockKey).digest()))
+            self.set_header('Sec-WebSocket-Accept', base64.b64encode(hashlib.sha1(key + KEY_SOCKET).digest()))
 
     def __read_arguments(self, line):
         """
@@ -331,7 +389,7 @@ class SocketHandler(threading.Thread):
         self.set_header('Sec-WebSocket-Protocol', self.__headers.get('Sec-WebSocket-Protocol'))
         key = self.__headers.get('Sec-WebSocket-Key')
         if key:
-            self.set_header('Sec-WebSocket-Accept', base64.b64encode(hashlib.sha1(key + SockKey).digest()))
+            self.set_header('Sec-WebSocket-Accept', base64.b64encode(hashlib.sha1(key + KEY_SOCKET).digest()))
 
     def __receive_line(self):
         line = ''
@@ -375,8 +433,8 @@ class WebSocketServer(threading.Thread):
     def run(self):
         try:
             self.__server.bind((Settings.get('address'), Settings.get('socketport')))
-        except Exception:
-            pass
+        except Exception as e:
+            print e
         while True:
             try:
                 self.__server.listen(50)
@@ -384,8 +442,8 @@ class WebSocketServer(threading.Thread):
                 if self.__cert:
                     connection = ssl.wrap_socket(connection, certfile=self.__cert, server_side=True)
                 SocketHandler(connection).start()
-            except Exception:
-                pass
+            except Exception as e:
+                print e
 
 
 class WebServer(BaseHTTPServer.HTTPServer):

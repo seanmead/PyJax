@@ -1,0 +1,79 @@
+input, :before, :after {
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.button{
+    text-decoration: none;
+}
+
+input[type=text], input[type=password]{
+    line-height: 1rem;
+}
+
+input[type=submit], .button{
+    line-height: 3rem;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(200, 200, 200, .5);
+}
+
+input[type=submit]:focus, .button:focus{
+    outline: 0;
+}
+
+input[type=text]:focus, input[type=password]:focus{
+    outline: 1px solid rgba(100, 100, 100, .1);
+}
+
+input[type=text], input[type=password], input[type=submit], .button{
+    font-size: 14px !important;
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: inherit !important;
+    height: 3rem;
+    display: inline-block;
+    vertical-align: middle;
+    border: 1px solid rgba(150, 150, 150, .75);
+    border-radius: 2px;
+    padding: 0 8px;
+    margin: 1px;
+    max-width: 200px;
+    width: auto;
+    -webkit-touch-callout: none;
+}
+
+input[type=submit]:hover, .button:hover{
+    border: 1px solid rgba(100, 100, 100, 0.4);
+}
+
+input[type=submit]:active, .button:active{
+    border: 1px solid rgba(50, 50, 50, 0);
+}
+
+form{
+    display: inline-block;
+    max-width: 600px;
+    min-width: 300px;
+    padding: 1em;
+    margin: auto 0 auto 0;
+    text-align: center;
+}
+
+.wide{
+    width: 200px;
+}
+
+
+@media screen and (max-width: 599px){
+    input[type=text], input[type=password], input[type=submit], .button{
+        width: 200px;
+        max-width: 200px;
+        min-width: 200px;
+    }
+    form{
+        max-width: 300px;
+    }
+}

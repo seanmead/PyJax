@@ -5,6 +5,7 @@ Created on Oct 1, 2014
 """
 
 import os
+import re
 import Tools
 
 
@@ -64,10 +65,10 @@ class Settings(object):
 
     @staticmethod
     def _read_config():
-        config = read_file(Settings.CONFIG_DIR + 'config.txt')
         configs = {}
-        for line in config.split('\n'):
-            name, value = line.split('=', 2)
+        line_match = re.compile('{.*.}')
+        for line in line_match.finditer(read_file(Settings.CONFIG_DIR + 'config.txt')):
+            name, value = line.group()[1:-1].split('=', 2)
             name = name.strip()
             value = value.strip()
             if name == 'address':
@@ -110,15 +111,13 @@ class Settings(object):
     def _read_nav(title):
         nav = read_file(Settings.FRAMEWORK_DIR + 'nav.html')
         nav_options = read_file(Settings.FRAMEWORK_DIR + 'nav-options.html')
-        link_h = open(Settings.CONFIG_DIR + 'links.txt', 'r')
-        links = link_h.readlines()
-        link_h.close()
-        links_format = ''
-        for link in links:
-            link = link.strip()
-            links_format += '<a href="#" id="%s" %s >%s</a>' % (link, nav_options, link)
+        link_match = re.compile('{.*.}')
+        links_html = ''
+        for item in link_match.finditer(read_file(Settings.CONFIG_DIR + 'links.txt')):
+            link = item.group().strip()[1:-1]
+            links_html += '<a href="#" id="%s" %s >%s</a>' % (link, nav_options, link)
 
-        nav = nav.replace('<!--LINKER-->', links_format)
+        nav = nav.replace('<!--LINKER-->', links_html)
         nav = nav.replace('<!--TITLE-->', title)
         nav = nav.replace('<!--DONT REMOVE THE LINKER COMMENT-->', '')
         nav = nav.replace('<!--It is going to be replaced by the nav links-->', '')

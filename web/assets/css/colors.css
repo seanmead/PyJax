@@ -1,0 +1,52 @@
+.red, .blue, .orange, .yellow, .green, .purple, .dark{
+    color: #FEFEFE !important;
+}
+
+.blue{
+    background: #33B5E5;
+}
+
+.blue-text{
+    color: #33B5E5 !important;
+}
+
+.orange{
+    background: #FFBB33;
+}
+
+.orange-text{
+    color: #FF8800 !important;
+}
+
+.red{
+    background: #FF4444;
+}
+
+.red-text{
+    color: #FF4444 !important;
+}
+
+.green{
+    background: #7acd5d;
+}
+
+.green-text{
+    color: #669900 !important;
+}
+
+.purple{
+    background: #AA66CC;
+}
+
+.purple-text{
+    color: #9933CC !important;
+}
+
+.dark{
+    background: #404040;
+}
+
+.white{
+    background: #FFF;
+    color: #404040;
+}

@@ -1,5 +1,5 @@
-title=Dashboard
-home=Home
-address=auto
-port=8080
-socketport=8081
+{title=PyJax}
+{home=Login}
+{address=auto}
+{port=8080}
+{socketport=8081}
